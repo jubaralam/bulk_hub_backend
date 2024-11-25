@@ -11,6 +11,10 @@ const userRouter = require("./user_routes/user")
 app.use("/api/user", userRouter)
 
 
+//product routes
+const productRouter = require("./product_routes/product.route")
+app.use("/api/product", productRouter)
+
 app.get("/",(req, res)=>{
     res.send("hello world,")
 })
