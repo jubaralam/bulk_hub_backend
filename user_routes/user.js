@@ -8,7 +8,7 @@ const UserModel = require("../user.model/user.model");
 userRouter.get("/", (req, res) => {});
 
 
-
+// registration route
 userRouter.post("/register", async (req, res) => {
   const { name, role, email, password } = req.body;
 
@@ -39,7 +39,7 @@ userRouter.post("/register", async (req, res) => {
 
 
 
-
+//login route
 userRouter.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
@@ -70,6 +70,60 @@ userRouter.post("/login", async (req, res) => {
       message: "You have logged in successfully",
       token,
     });
+  } catch (error) {
+    res.status(500).send({ message: "Internal server error", error: error.message });
+  }
+});
+
+//updating user date
+userRouter.put("/update/:id", async (req, res) => {
+  const { id } = req.params; 
+  const { name, role, email, password } = req.body; 
+
+  // Validate request body
+  if (!name && !role && !email && !password) {
+    return res.status(400).send({ message: "No fields to update provided" });
+  }
+
+  try {
+    // Find the user by ID
+    const user = await UserModel.findById(id);
+    if (!user) {
+      return res.status(404).send({ message: "User not found" });
+    }
+
+    // Prepare updated fields
+    const updates = {};
+    if (name) updates.name = name;
+    if (role) updates.role = role;
+    if (email) updates.email = email;
+    if (password) {
+      const hashedPassword = await bcrypt.hash(password, 5);
+      updates.password = hashedPassword;
+    }
+
+    // Update the user data
+    await UserModel.findByIdAndUpdate(id, updates, { new: true });
+
+    res.status(200).send({ message: "User data updated successfully" });
+  } catch (error) {
+    res.status(500).send({ message: "Internal server error", error: error.message });
+  }
+});
+
+//deleting user 
+userRouter.delete("/delete/:id", async (req, res) => {
+  const { id } = req.params; 
+
+  try {
+    // Find and delete the user by ID
+    const user = await UserModel.findByIdAndDelete(id);
+
+    if (!user) {
+      return res.status(404).send({ message: "User not found" });
+    }
+
+    res.status(200).send({ message: "User deleted successfully" });
   } catch (error) {
     res.status(500).send({ message: "Internal server error", error: error.message });
   }
