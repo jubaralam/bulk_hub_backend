@@ -1,11 +1,18 @@
 const express = require("express");
 const productRouter = express.Router();
 const ProductModel = require("../product_model/product.model");
+const authMiddleware = require("../middleware/auth.middleware")
+
+const rolesForCreation = ["seller", "admin"]
 
 // Create a new product
-productRouter.post("/create", async (req, res) => {
+productRouter.post("/create", authMiddleware, async (req, res) => {
   const { title, price, weight, description, category } = req.body;
+const {role}= req.user
 
+if(!role.includes("seller") || !role.includes("admin")){
+  return res.send({"message":"you are not authorized"})
+}
   // Validate input fields
   if (!title || !price || !weight || !description || !category) {
     return res.status(400).send({ message: "All fields are required" });
@@ -38,9 +45,15 @@ productRouter.get("/", async (req, res) => {
 });
 
 // Update a product
-productRouter.put("/update/:id", async (req, res) => {
+productRouter.put("/update/:id",authMiddleware, async (req, res) => {
   const { id } = req.params;
   const updates = req.body;
+
+  const {role}= req.user
+
+if(!role.includes("seller") || !role.includes("admin")){
+  return res.send({"message":"you are not authorized"})
+}
 
   // Ensure at least one field is provided for update
   if (!Object.keys(updates).length) {
@@ -63,9 +76,14 @@ productRouter.put("/update/:id", async (req, res) => {
 });
 
 // Delete a product
-productRouter.delete("/delete/:id", async (req, res) => {
+productRouter.delete("/delete/:id", authMiddleware, async (req, res) => {
   const { id } = req.params;
 
+  const {role}= req.user
+
+if(!role.includes("seller") || !role.includes("admin")){
+  return res.send({"message":"you are not authorized"})
+}
   try {
     const deletedProduct = await ProductModel.findByIdAndDelete(id);
 

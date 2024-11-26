@@ -5,7 +5,16 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
 const UserModel = require("../user.model/user.model");
-userRouter.get("/", (req, res) => {});
+userRouter.get("/", async(req, res) => {
+  try {
+    const findUsers = await UserModel.find()
+res.status(200).send({"data":findUsers})
+    
+  } catch (error) {
+    res.status(500).send({"error":error.message})
+    
+  }
+});
 
 
 // registration route
@@ -63,7 +72,7 @@ userRouter.post("/login", async (req, res) => {
 
     // Generate JWT token
     const token = jwt.sign({ id: user._id }, process.env.secreteKey, {
-      expiresIn: "1h",
+      expiresIn: "24h",
     });
 
     res.status(200).send({
